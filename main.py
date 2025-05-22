@@ -43,3 +43,13 @@ while True:
         print("Available files:", fs.list_files_only())
         fname = input("File name: ")
         print(fs.truncate(fname))
+        
+# Information File
+    elif choice == '6':
+        print(fs.ls())
+    elif choice == '7':
+        fs.show_disk()
+    elif choice == '8':
+        print("Available files:", fs.list_files_only())
+        fname = input("File name: ")
+        print(fs.show_metadata(fname))
