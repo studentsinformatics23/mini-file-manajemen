@@ -204,3 +204,54 @@ class MiniFileSystem:
                 if found:
                     return found
                 return None
+            
+# Save and Load File System
+    def save_to_file(self, path='data/fs_dump.json'):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+
+        data = {
+            'fs': self.fs,
+            'disk': self.disk,
+            'current_path': self.get_current_path()
+        }
+
+        with open(path, 'w') as f:
+            json.dump(data, f, indent=2)
+
+        return f"File system saved to '{path}'."
+
+    def load_from_file(self, path='data/fs_dump.json'):
+        if not os.path.exists(path):
+            return "No saved file system found."
+
+        with open(path, 'r') as f:
+            data = json.load(f)
+            self.fs = data['fs']
+            self.disk = data['disk']
+            # Pulihkan current_dir dari path
+            self.current_dir = self._get_dir_by_path(data.get('current_path', '/'))
+
+        return f"File system loaded from '{path}'."
+    
+    def list_files_only(self):
+        files = [
+            name for name, item in self.current_dir['children'].items()
+            if item['type'] == 'file'
+        ]
+        if not files:
+            return "No files available."
+        return ", ".join(files)
+    
+
+    def _get_dir_by_path(self, path_str):
+        if path_str == '/' or not path_str:
+            return self.fs
+
+        parts = path_str.strip('/').split('/')
+        curr = self.fs
+        for part in parts:
+            if part in curr['children'] and curr['children'][part]['type'] == 'dir':
+                curr = curr['children'][part]
+            else:
+                return self.fs  # fallback ke root jika gagal
+            return curr

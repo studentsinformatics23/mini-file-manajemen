@@ -44,7 +44,7 @@ while True:
         fname = input("File name: ")
         print(fs.truncate(fname))
         
-# Information File
+    # Information File
     elif choice == '6':
         print(fs.ls())
     elif choice == '7':
@@ -59,6 +59,7 @@ while True:
         filename = input("Enter filename to save as (e.g., fs_backup1.json): ")
         fullpath = f"data/{filename}"
         print(fs.save_to_file(fullpath))
+        
     elif choice == '10':
         filename = input("Enter dump file name (e.g., fs_dump.json): ")
         fullpath = f"data/{filename}"
