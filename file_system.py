@@ -3,15 +3,63 @@ import json
 import os
 
 class MiniFileSystem:
-  def _init_(self, total_blocks=100):
-          self.disk = [None] * total_blocks
-          self.fs = {
-              'name' : '/',
-              'type' : 'dir',
-              'children' : {}
-          }
+    def __init__(self, total_blocks=100):
+        self.disk = [None] * total_blocks
+        self.fs = {
+            'name' : '/',
+            'type' : 'dir',
+            'children' : {}
+        }
 
         self.current_dir = self.fs
+
+    def get_current_path(self):
+        path = []
+
+        def find_path(node, target, curr_path):
+            if node == target:
+                path.extend(curr_path)
+                return True
+            if node['type'] == 'dir':
+                for name, child in node['children'].items():
+                    if find_path(child, target, curr_path + [name]):
+                        return True
+            return False
+
+        find_path(self.fs, self.current_dir, ['/'])  # root path starts with /
+        return '/' if len(path) == 1 else '/'.join(path)
+
+    
+    def mkdir(self, dirname):
+        if dirname in self.current_dir['children']:
+            return "Directory already exists."
+        self.current_dir['children'][dirname] = {
+            'name': dirname,
+            'type': 'dir',
+            'children': {}
+        }
+        return f"Directory '{dirname}' created."
+    
+    def cd(self, dirname):
+        if dirname == "..":
+            # Naik ke atas (jika bukan root)
+            if self.current_dir == self.fs:
+                return "Already at root directory."
+            path = self._find_parent(self.fs, self.current_dir)
+            if path:
+                self.current_dir = path
+                return "Moved up to parent directory."
+            else:
+                return "Parent not found."
+        elif dirname in self.current_dir['children']:
+            target = self.current_dir['children'][dirname]
+            if target['type'] == 'dir':
+                self.current_dir = target
+                return f"Entered directory '{dirname}'."
+            else:
+                return f"'{dirname}' is not a directory."
+        else:
+            return "Directory not found."
   
 # Manipulasi File
     def create(self, filename):
@@ -108,58 +156,6 @@ class MiniFileSystem:
             file['timestamp'] = datetime.datetime.now().isoformat()
             return f"File '{filename}' truncated."
         
-# Directory Manipulation
-
-        def get_current_path(self):
-        path = []
-
-        def find_path(node, target, curr_path):
-            if node == target:
-                path.extend(curr_path)
-                return True
-            if node['type'] == 'dir':
-                for name, child in node['children'].items():
-                    if find_path(child, target, curr_path + [name]):
-                        return True
-            return False
-
-        find_path(self.fs, self.current_dir, ['/'])  # root path starts with /
-        return '/' if len(path) == 1 else '/'.join(path)
-    
-    def mkdir(self, dirname):
-        if dirname in self.current_dir['children']:
-            return "Directory already exists."
-        self.current_dir['children'][dirname] = {
-            'name': dirname,
-            'type': 'dir',
-            'children': {}
-        }
-        return f"Directory '{dirname}' created."
-    
-    def cd(self, dirname):
-        if dirname == "..":
-            # Naik ke atas (jika bukan root)
-            if self.current_dir == self.fs:
-                return "Already at root directory."
-            path = self._find_parent(self.fs, self.current_dir)
-            if path:
-                self.current_dir = path
-                return "Moved up to parent directory."
-            else:
-                return "Parent not found."
-        elif dirname in self.current_dir['children']:
-            target = self.current_dir['children'][dirname]
-            if target['type'] == 'dir':
-                self.current_dir = target
-                return f"Entered directory '{dirname}'."
-            else:
-                return f"'{dirname}' is not a directory."
-        else:
-            return "Directory not found."
-
-
-        self.current_dir = self.fs
-
     def show_disk(self):
             print("\nDisk Status (X = used, . = free):")
             for i in range(0, len(self.disk), 10):
@@ -174,12 +170,12 @@ class MiniFileSystem:
             return f"'{filename}' is not a file."
 
         return (
-            f"\nMetadata for '{filename}':\n"
-            f"  Start Block : {file.get('start_block')}\n"
-            f"  Size        : {file.get('size')} block(s)\n"
-            f"  Timestamp   : {file.get('timestamp')}\n"
-            f"  Content     : '{file.get('content')}'"
-    )
+                f"\nMetadata for '{filename}':\n"
+                f"  Start Block : {file.get('start_block')}\n"
+                f"  Size        : {file.get('size')} block(s)\n"
+                f"  Timestamp   : {file.get('timestamp')}\n"
+                f"  Content     : '{file.get('content')}'"
+        )
 
     def ls(self):
         if not self.current_dir['children']:
@@ -198,4 +194,4 @@ class MiniFileSystem:
                 found = self._find_parent(child, target)
                 if found:
                     return found
-
+                return None
