@@ -5,7 +5,7 @@ import io
 import sys
 
 class MiniFileSystemGUI:
-    def _init_(self, root):
+    def __init__(self, root):
         self.fs = MiniFileSystem()
         self.root = root
         self.root.title("Mini File System Emulator")
@@ -216,7 +216,7 @@ class MiniFileSystemGUI:
             self.display(res)
             self.update_status()
 
-if __name__ == "_main_":
+if __name__ == "__main__":
     root = tk.Tk()
     app = MiniFileSystemGUI(root)
     root.mainloop()

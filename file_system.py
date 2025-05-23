@@ -134,6 +134,15 @@ class MiniFileSystem:
             output.append(f"{icon} {name}")
         return "\n".join(output)
     
+    def list_files_only(self):
+        files = [
+            name for name, item in self.current_dir['children'].items()
+            if item['type'] == 'file'
+        ]
+        if not files:
+            return "No files available."
+        return ", ".join(files)
+    
     def truncate(self, filename):
         if filename not in self.current_dir['children']:
             return "File not found."
